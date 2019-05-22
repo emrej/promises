@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="ie=edge" http-equiv="X-UA-Compatible">
+
+    <script src="./node_modules/idb/build/idb.js"></script>
+
+    <title>Promise to index my DB?</title>
+</head>
+<body>
+<script>
+    // IndexedDB Code will go here
+    (() => {
+        if (!('indexedDB' in window)) {
+            console.warn('IndexedDB not supported');
+            return;
+        }
+
+        const name = 'fe-guild';
+        const version = 3; //versions start at 1
+
+        const dbPromise = idb.openDb(name, version, upgradeDB => {
+            console.log('Old version: ' + upgradeDB.oldVersion);
+            switch (upgradeDB.oldVersion) {
+                case 0:
+                    console.log('Case 0');
+                    // a placeholder case so that the switch block will
+                    // execute when the database is first created
+                    // (oldVersion is 0)
+                case 1:
+                    console.log('Creating the products object store');
+                    let phones;
+                    if (upgradeDB.objectStoreNames.contains('phones')) {
+                        phones = upgradeDB.transaction.objectStore('phones');
+                    } else {
+                        phones = upgradeDB.createObjectStore('phones', {keyPath: 'id'});
+                    }
+                    phones.createIndex('id', 'id', { unique: false });
+            }
+        });
+
+        dbPromise.then(db => {
+            /*
+            const tx = db.transaction('phones', 'readwrite');
+            const store = tx.objectStore('phones');
+
+            const phones = [
+                {
+                    id: 'appl-xs',
+                    brand: 'Apple',
+                    model: 'iPhone XS',
+                    color: 'Space Gray',
+                },
+                {
+                    id: 'appl-6s',
+                    brand: 'Apple',
+                    model: 'iPhone 6S',
+                    color: 'Rose Gold',
+                },
+                {
+                    id: 'galaxy-s9',
+                    brand: 'Samsung',
+                    model: 'Galaxy S9',
+                    color: 'Black',
+                }
+            ];
+
+
+            return Promise.all(phones.map(phone=>{
+                console.log('Adding phone', phone);
+                return store.add(phone);
+            })).catch(error => {
+                tx.abort();
+                console.log(error);
+            }).then(() => console.log('All phones added successfully!'));
+            */
+
+            /*
+            const tx = db.transaction('phones', 'readwrite');
+            const store = tx.objectStore('phones');
+
+            store.put({
+                id: 'appl-6s',
+                brand: 'Apple Emre',
+                model: 'iPhone 6S Emre',
+                color: 'Rose Gold Emre',
+            });
+            return tx.complete;
+            */
+
+        });
+
+        dbPromise.then(db => {
+            const tx = db.transaction('phones', 'readonly');
+            const store = tx.objectStore('phones');
+
+            return store.openCursor();
+        })
+            .then(function logItems(cursor) {
+                if (!cursor) {
+                    return;
+                }
+
+                console.log('cursor is at:', cursor.key);
+
+                for (const field in cursor.value) {
+                    console.log(field+':'+cursor.value[field]);
+                }
+
+                return cursor.continue().then(logItems);
+            })
+            .then(() => console.log('done!'));
+    })()
+</script>
+</body>
+</html>

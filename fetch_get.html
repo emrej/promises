@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="ie=edge" http-equiv="X-UA-Compatible">
+    <title>Sparky! Go Fetch!</title>
+</head>
+<body>
+<script>
+    // XMLHttpRequest code will go here
+    const xmlHttpRequest = new XMLHttpRequest();
+    xmlHttpRequest.open('GET', 'https://httpbin.org/get');
+    xmlHttpRequest.addEventListener('load', event => {
+        const xhr = event.target;
+
+        if (xhr.status === 200) {
+            console.log('XHR');
+            console.log(JSON.parse(event.target.responseText));
+        } else {
+            console.log(xhr.status);
+        }
+    });
+    xmlHttpRequest.send();
+
+    const request = new Request('https://httpbin.org/get', {
+        headers: new Headers({
+            'Content-Type': 'application/json'
+        })
+    });
+
+    // Fetch code will go here
+    fetch(request)
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+
+            return Promise.reject(response.status);
+        })
+        .then(data => {console.log('Fetch'); console.log(data);})
+        .catch(error => console.log(error));
+
+    // Async Await Fetch code will go here
+    const asyncFetch = async () => {
+        try {
+            const response = await fetch(request);
+            //console.log(response);
+            if (response.ok) {
+                console.log('Fetch Async/Await');
+                const body = await response.json();
+                console.log(body);
+            } else {
+                console.error(response.status);
+            }
+        } catch (error) {
+            console.log(error.message);
+        } finally {
+            console.log('Finally Fetch Async/Await');
+        }
+    };
+    asyncFetch();
+
+</script>
+</body>
+</html>
